@@ -1,0 +1,51 @@
+.env-selector {
+  position: relative;
+}
+
+.env-selector-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.env-selector-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.env-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+  min-width: 160px;
+  padding: 4px;
+}
+
+.env-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.env-option:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.env-option.active {
+  color: var(--accent);
+}

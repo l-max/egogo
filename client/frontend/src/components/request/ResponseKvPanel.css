@@ -1,0 +1,52 @@
+.response-kv-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.response-kv-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  min-height: 32px;
+  flex-shrink: 0;
+}
+
+.response-kv-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+  white-space: nowrap;
+}
+
+.response-kv-action:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.response-kv-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.response-kv-content {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  cursor: text;
+}
+
+.response-kv-content ::selection,
+.response-kv-content ::-moz-selection {
+  background: rgba(255, 108, 55, 0.35);
+  color: var(--text-primary);
+}

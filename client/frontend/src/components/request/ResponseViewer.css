@@ -1,0 +1,233 @@
+.response-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.response-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  font-size: 12px;
+}
+
+.response-status-bar.error {
+  color: var(--method-delete);
+}
+
+.response-status-code {
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.response-status-meta {
+  color: var(--text-muted);
+}
+
+.sub-tabs-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-tertiary);
+  padding-right: 8px;
+  min-height: 32px;
+}
+
+.sub-tabs {
+  display: flex;
+  align-items: stretch;
+}
+
+.sub-tab {
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sub-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.sub-tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent);
+}
+
+.sub-tab-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: var(--bg-active);
+  color: var(--text-muted);
+}
+
+.format-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 8px;
+}
+
+.pretty-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.pretty-toggle input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.pretty-toggle:hover {
+  color: var(--text-primary);
+}
+
+.format-selector {
+  position: relative;
+}
+
+.format-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+}
+
+.format-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.format-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  z-index: 50;
+  min-width: 140px;
+  padding: 4px;
+}
+
+.format-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+}
+
+.format-option:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.format-option.active {
+  color: var(--accent);
+}
+
+.sub-tab-content {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  text-align: left;
+}
+
+.sub-tab-content-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+
+.response-pre {
+  padding: 12px;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-secondary);
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.response-pre.error-text {
+  color: var(--method-delete);
+}
+
+.response-placeholder {
+  padding: 16px 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+  text-align: left;
+}
+
+.response-preview-frame {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  border: none;
+  background: #fff;
+}
+
+.kv-readonly {
+  width: 100%;
+}
+
+.kv-readonly-row {
+  display: grid;
+  grid-template-columns: minmax(220px, 35%) 1fr;
+  gap: 0;
+  padding: 0;
+  font-size: 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.kv-readonly-row:hover {
+  background: var(--bg-hover);
+}
+
+.kv-readonly-key {
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  word-break: break-word;
+  text-align: left;
+  padding: 8px 12px;
+  border-right: 1px solid var(--border);
+}
+
+.kv-readonly-val {
+  color: var(--text-secondary);
+  word-break: break-word;
+  text-align: left;
+  padding: 8px 12px;
+}

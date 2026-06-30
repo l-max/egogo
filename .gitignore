@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+client/frontend/dist/
+client/build/bin/
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local data
+.egogo/
+
+# Build artifacts
+client/build/bin/
