@@ -363,26 +363,36 @@ function TreeNodeRows(props: {
 export function ProjectTree() {
   const { projects, toggleProject, renameNode, treeAction, moveTreeNode, createProject, t } = useApp();
   const [renameState, setRenameState] = useState<RenameState | null>(null);
+  const renameStateRef = useRef<RenameState | null>(null);
   const [dragSource, setDragSource] = useState<NodeRef | null>(null);
   const [dropTarget, setDropTarget] = useState<NodeRef | null>(null);
   const suppressClickRef = useRef(false);
 
   const onStartRename = useCallback((ref: NodeRef, name: string) => {
-    setRenameState({ ref, name });
+    const next = { ref, name };
+    renameStateRef.current = next;
+    setRenameState(next);
   }, []);
 
   const onRenameChange = useCallback((name: string) => {
-    setRenameState((s) => (s ? { ...s, name } : s));
+    const next = renameStateRef.current ? { ...renameStateRef.current, name } : null;
+    renameStateRef.current = next;
+    setRenameState(next);
   }, []);
 
   const onRenameCommit = useCallback(() => {
-    setRenameState((s) => {
-      if (s && s.name.trim()) renameNode(s.ref, s.name.trim());
-      return null;
-    });
+    const target = renameStateRef.current;
+    if (target && target.name.trim()) {
+      renameNode(target.ref, target.name.trim());
+    }
+    setRenameState(null);
+    renameStateRef.current = null;
   }, [renameNode]);
 
-  const onRenameCancel = useCallback(() => setRenameState(null), []);
+  const onRenameCancel = useCallback(() => {
+    setRenameState(null);
+    renameStateRef.current = null;
+  }, []);
 
   const onDragStart = useCallback(
     (ref: NodeRef) => (e: React.DragEvent) => {
