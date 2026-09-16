@@ -3,7 +3,6 @@ node_modules/
 client/frontend/dist/
 client/frontend/wailsjs
 client/frontend/package.json.md5
-client/build/bin/
 
 # Go
 *.exe
