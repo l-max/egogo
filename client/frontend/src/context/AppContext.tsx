@@ -381,6 +381,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [state.activeProfileId]
   );
 
+  const pushRemoteTree = useCallback(
+    (projects: Project[], projectIds: (string | undefined)[]) => {
+      if (activeProfile.type !== 'remote') return;
+      const seen = new Set<string>();
+      for (const id of projectIds) {
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        const project = projects.find((p) => p.id === id);
+        if (project) void pushRemoteProjectUpdate(state.activeProfileId, project);
+      }
+    },
+    [activeProfile.type, state.activeProfileId]
+  );
+
   useEffect(() => {
     (async () => {
       let settings: AppSettings = { language: 'ru', myProfileName: 'My' };
@@ -786,6 +800,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       projects = addRequestTo(projects, parent, request);
     }
 
+    pushRemoteTree(projects, [projectId]);
     await persistProjects(state.activeProfileId, projects);
     setState((s) => ({
       ...s,
@@ -797,16 +812,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       ),
     }));
     return true;
-  }, [state.activeProfileId, state.activeTabId, state.projects, state.tabs, t.tabs.newRequest]);
+  }, [state.activeProfileId, state.activeTabId, state.projects, state.tabs, t.tabs.newRequest, pushRemoteTree]);
 
   const renameNode = useCallback(
     (ref: NodeRef, name: string) => {
       const projects = renameNodeInTree(state.projects, ref, name);
-      if (activeProfile.type === 'remote') {
-        const projectId = ref.nodeType === 'project' ? ref.nodeId : ref.projectId;
-        const project = projects.find((p) => p.id === projectId);
-        if (project) void pushRemoteProjectUpdate(state.activeProfileId, project);
-      }
+      pushRemoteTree(projects, [ref.nodeType === 'project' ? ref.nodeId : ref.projectId]);
       withPersistProjects(projects);
       if (ref.nodeType === 'request') {
         setState((s) => ({
@@ -820,16 +831,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setState((s) => ({ ...s, projects }));
       }
     },
-    [state.projects, withPersistProjects, activeProfile.type]
+    [state.projects, withPersistProjects, pushRemoteTree]
   );
 
   const moveTreeNode = useCallback(
     (source: NodeRef, targetParent: NodeRef) => {
       const projects = moveNodeInTree(state.projects, source, targetParent);
       if (!projects) return;
+      pushRemoteTree(projects, [source.projectId, targetParent.projectId]);
       withPersistProjects(projects);
     },
-    [state.projects, withPersistProjects]
+    [state.projects, withPersistProjects, pushRemoteTree]
   );
 
   const treeAction = useCallback(
@@ -852,11 +864,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }
         case 'duplicate': {
           const projects = duplicateNodeInTree(state.projects, ref);
+          pushRemoteTree(projects, ref.nodeType === 'project' ? [] : [ref.projectId]);
           withPersistProjects(projects);
           return;
         }
         case 'delete': {
           const projects = deleteNodeFromTree(state.projects, ref);
+          pushRemoteTree(projects, ref.nodeType === 'project' ? [] : [ref.projectId]);
           persistProjects(state.activeProfileId, projects);
           setState((s) => ({
             ...s,
@@ -871,6 +885,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         case 'addRequest': {
           const request = createDefaultRequest(t.tabs.newRequest);
           const projects = addRequestTo(state.projects, ref, request);
+          pushRemoteTree(projects, [ref.projectId]);
           withPersistProjects(projects);
           openTab({
             name: request.name,
@@ -886,12 +901,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
         case 'addFolder': {
           const folder = createDefaultFolder();
           const projects = addFolderTo(state.projects, ref, folder);
+          pushRemoteTree(projects, [ref.projectId]);
           withPersistProjects(projects);
           return;
         }
       }
     },
-    [state.projects, t.tabs.newRequest, withPersistProjects, openTab]
+    [state.projects, t.tabs.newRequest, withPersistProjects, openTab, pushRemoteTree]
   );
 
   const updateCookieStore = useCallback((updater: (store: CookieStore) => CookieStore) => {
