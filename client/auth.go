@@ -135,6 +135,49 @@ func serverGet[T any](client *http.Client, endpoint string, authHeader string) (
 	return &out, nil
 }
 
+func serverPut[T any](client *http.Client, endpoint string, body interface{}, authHeader string) (*T, int, error) {
+	var buf bytes.Buffer
+	if body != nil {
+		if err := json.NewEncoder(&buf).Encode(body); err != nil {
+			return nil, 0, err
+		}
+	}
+	req, err := http.NewRequest(http.MethodPut, endpoint, &buf)
+	if err != nil {
+		return nil, 0, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if authHeader != "" {
+		req.Header.Set("Authorization", authHeader)
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, resp.StatusCode, err
+	}
+	if resp.StatusCode >= 400 {
+		var errBody struct {
+			Error string `json:"error"`
+		}
+		_ = json.Unmarshal(data, &errBody)
+		if errBody.Error != "" {
+			return nil, resp.StatusCode, fmt.Errorf("%s", errBody.Error)
+		}
+		return nil, resp.StatusCode, fmt.Errorf("request failed (%d)", resp.StatusCode)
+	}
+	var out T
+	if len(data) > 0 {
+		if err := json.Unmarshal(data, &out); err != nil {
+			return nil, resp.StatusCode, err
+		}
+	}
+	return &out, resp.StatusCode, nil
+}
+
 func (a *App) AuthLogin(serverURL, email, password string) (*AuthResult, error) {
 	serverURL = normalizeServerURL(serverURL)
 	email = strings.TrimSpace(strings.ToLower(email))
@@ -385,6 +428,55 @@ func (a *App) CreateRemoteProject(profileID, name, data string) (string, error) 
 			cred = refreshed
 			authHeader = "Bearer " + cred.AccessToken
 			meta, _, err = doCreate(authHeader)
+		}
+		if err != nil {
+			return "", err
+		}
+	}
+
+	out, err := json.Marshal(meta)
+	if err != nil {
+		return "", err
+	}
+	return string(out), nil
+}
+
+// UpdateRemoteProject renames and/or updates project data on the remote server.
+// Returns updated metadata as JSON: {"id","name","updatedAt"}.
+func (a *App) UpdateRemoteProject(profileID, projectID, name, data string) (string, error) {
+	cred, err := a.loadRemoteCredentials(profileID)
+	if err != nil {
+		return "", err
+	}
+	if cred == nil {
+		return "", fmt.Errorf("profile not found")
+	}
+
+	client := a.serverHTTPClient()
+	authHeader := "Bearer " + cred.AccessToken
+
+	type projectMeta struct {
+		ID        string `json:"id"`
+		Name      string `json:"name"`
+		UpdatedAt string `json:"updatedAt"`
+	}
+	type updateRequest struct {
+		Name string          `json:"name"`
+		Data json.RawMessage `json:"data"`
+	}
+	doUpdate := func(hdr string) (*projectMeta, int, error) {
+		return serverPut[projectMeta](client, cred.ServerURL+"/api/v1/projects/"+projectID, updateRequest{
+			Name: name,
+			Data: json.RawMessage(data),
+		}, hdr)
+	}
+
+	meta, _, err := doUpdate(authHeader)
+	if err != nil {
+		if refreshed, refreshErr := a.refreshTokens(cred); refreshErr == nil {
+			cred = refreshed
+			authHeader = "Bearer " + cred.AccessToken
+			meta, _, err = doUpdate(authHeader)
 		}
 		if err != nil {
 			return "", err

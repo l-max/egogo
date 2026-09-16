@@ -271,6 +271,20 @@ async function persistProjects(profileId: string, projects: Project[]) {
   }
 }
 
+async function pushRemoteProjectUpdate(profileId: string, project: Project) {
+  try {
+    const { UpdateRemoteProject } = await import('../../wailsjs/go/main/App');
+    await UpdateRemoteProject(
+      profileId,
+      project.id,
+      project.name,
+      JSON.stringify({ children: project.children })
+    );
+  } catch {
+    // Сервер недоступен/нет прав — сохраняем только локально.
+  }
+}
+
 async function persistEnvironments(profileId: string, environments: Environment[]) {
   try {
     const { SaveEnvironments } = await import('../../wailsjs/go/main/App');
@@ -788,6 +802,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const renameNode = useCallback(
     (ref: NodeRef, name: string) => {
       const projects = renameNodeInTree(state.projects, ref, name);
+      if (activeProfile.type === 'remote') {
+        const projectId = ref.nodeType === 'project' ? ref.nodeId : ref.projectId;
+        const project = projects.find((p) => p.id === projectId);
+        if (project) void pushRemoteProjectUpdate(state.activeProfileId, project);
+      }
       withPersistProjects(projects);
       if (ref.nodeType === 'request') {
         setState((s) => ({
@@ -801,7 +820,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setState((s) => ({ ...s, projects }));
       }
     },
-    [state.projects, withPersistProjects]
+    [state.projects, withPersistProjects, activeProfile.type]
   );
 
   const moveTreeNode = useCallback(
