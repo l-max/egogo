@@ -1,4 +1,4 @@
-import { ChevronRight, ChevronDown, Globe } from 'lucide-react';
+import { ChevronRight, ChevronDown, Globe, Plus } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { ProjectTree } from './ProjectTree';
 import './SidebarPanels.css';
@@ -18,17 +18,27 @@ export function SidebarPanels({
   onToggleProjects,
   onToggleEnvironments,
 }: SidebarPanelsProps) {
-  const { environments, openEnvironmentEditor, t } = useApp();
+  const { environments, openEnvironmentEditor, createProject, t } = useApp();
 
   return (
     <div className="sidebar-panels">
       <div className={`sidebar-section sidebar-section-top ${projectsExpanded ? 'sidebar-section-grow' : ''}`}>
-        <button className="sidebar-section-header" onClick={onToggleProjects}>
-          <span className="sidebar-section-chevron">
-            {projectsExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-          </span>
-          <span className="sidebar-section-title-text">{t.sidebar.projects}</span>
-        </button>
+        <div className="sidebar-section-header-row">
+          <button className="sidebar-section-header" onClick={onToggleProjects}>
+            <span className="sidebar-section-chevron">
+              {projectsExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+            </span>
+            <span className="sidebar-section-title-text">{t.sidebar.projects}</span>
+          </button>
+          <button
+            className="sidebar-section-add-btn"
+            title={t.sidebar.newProject}
+            aria-label={t.sidebar.newProject}
+            onClick={() => void createProject()}
+          >
+            <Plus size={14} />
+          </button>
+        </div>
         {projectsExpanded && (
           <div className="sidebar-section-body sidebar-section-scroll">
             <ProjectTree />

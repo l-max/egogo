@@ -349,6 +349,55 @@ func (a *App) SyncRemoteProjects(profileID string) (string, error) {
 	return string(out), nil
 }
 
+// CreateRemoteProject creates a project on the remote server (admin only)
+// and returns its metadata as JSON: {"id","name","updatedAt"}.
+func (a *App) CreateRemoteProject(profileID, name, data string) (string, error) {
+	cred, err := a.loadRemoteCredentials(profileID)
+	if err != nil {
+		return "", err
+	}
+	if cred == nil {
+		return "", fmt.Errorf("profile not found")
+	}
+
+	client := a.serverHTTPClient()
+	authHeader := "Bearer " + cred.AccessToken
+
+	type projectMeta struct {
+		ID        string `json:"id"`
+		Name      string `json:"name"`
+		UpdatedAt string `json:"updatedAt"`
+	}
+	type createRequest struct {
+		Name string          `json:"name"`
+		Data json.RawMessage `json:"data"`
+	}
+	doCreate := func(hdr string) (*projectMeta, int, error) {
+		return serverPost[projectMeta](client, cred.ServerURL+"/api/v1/projects", createRequest{
+			Name: name,
+			Data: json.RawMessage(data),
+		}, hdr)
+	}
+
+	meta, _, err := doCreate(authHeader)
+	if err != nil {
+		if refreshed, refreshErr := a.refreshTokens(cred); refreshErr == nil {
+			cred = refreshed
+			authHeader = "Bearer " + cred.AccessToken
+			meta, _, err = doCreate(authHeader)
+		}
+		if err != nil {
+			return "", err
+		}
+	}
+
+	out, err := json.Marshal(meta)
+	if err != nil {
+		return "", err
+	}
+	return string(out), nil
+}
+
 func (a *App) refreshTokens(cred *remoteProfileCredentials) (*remoteProfileCredentials, error) {
 	client := a.serverHTTPClient()
 	resp, _, err := serverPost[serverTokens](client, cred.ServerURL+"/api/v1/auth/refresh", map[string]string{

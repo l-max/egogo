@@ -8,6 +8,7 @@ export const en: Translations = {
     projects: 'Projects',
     environments: 'Environments',
     newProject: 'New project',
+    noProjects: 'No projects yet',
   },
   profile: {
     signIn: 'Sign in to profile',

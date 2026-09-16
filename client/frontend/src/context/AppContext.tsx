@@ -55,6 +55,7 @@ interface AppContextValue extends AppState {
   setActiveTab: (id: string) => void;
   setActiveEnvironment: (id: string | null) => void;
   toggleProject: (id: string) => void;
+  createProject: () => Promise<void>;
   updateActiveTab: (patch: Partial<RequestTab>) => void;
   saveActiveTab: () => Promise<boolean>;
   treeAction: (ref: NodeRef, action: import('../types').ContextMenuAction) => void;
@@ -704,6 +705,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const createProject = useCallback(async (): Promise<void> => {
+    const name = t.sidebar.newProject;
+    let id = newId('proj');
+    if (activeProfile.type === 'remote') {
+      try {
+        const { CreateRemoteProject } = await import('../../wailsjs/go/main/App');
+        const raw = await CreateRemoteProject(
+          state.activeProfileId,
+          name,
+          JSON.stringify({ children: [] })
+        );
+        const meta = raw ? (JSON.parse(raw) as { id?: string }) : null;
+        if (meta?.id) id = meta.id;
+      } catch {
+        // Сервер недоступен/нет прав — создаём локально.
+      }
+    }
+    const project: Project = { id, name, expanded: true, children: [] };
+    const projects = [...state.projects, project];
+    await persistProjects(state.activeProfileId, projects);
+    setState((s) => ({ ...s, projects }));
+  }, [state.projects, state.activeProfileId, activeProfile.type, t.sidebar.newProject]);
+
   const updateActiveTab = useCallback((patch: Partial<RequestTab>) => {
     setState((s) => ({
       ...s,
@@ -909,6 +933,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setActiveTab,
         setActiveEnvironment,
         toggleProject,
+        createProject,
         updateActiveTab,
         saveActiveTab,
         treeAction,

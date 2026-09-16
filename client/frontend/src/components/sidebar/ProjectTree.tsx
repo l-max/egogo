@@ -361,7 +361,7 @@ function TreeNodeRows(props: {
 }
 
 export function ProjectTree() {
-  const { projects, toggleProject, renameNode, treeAction, moveTreeNode } = useApp();
+  const { projects, toggleProject, renameNode, treeAction, moveTreeNode, createProject, t } = useApp();
   const [renameState, setRenameState] = useState<RenameState | null>(null);
   const [dragSource, setDragSource] = useState<NodeRef | null>(null);
   const [dropTarget, setDropTarget] = useState<NodeRef | null>(null);
@@ -463,6 +463,15 @@ export function ProjectTree() {
 
   return (
     <div className="project-tree-content no-select">
+      {projects.length === 0 && (
+        <div className="project-tree-empty">
+          <span className="project-tree-empty-text">{t.sidebar.noProjects}</span>
+          <button className="project-tree-empty-btn" onClick={() => void createProject()}>
+            <Plus size={14} />
+            <span>{t.sidebar.newProject}</span>
+          </button>
+        </div>
+      )}
       {projects.map((project) => {
         const nodeRef = projectRef(project.id);
         return (

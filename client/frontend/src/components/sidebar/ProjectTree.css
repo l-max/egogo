@@ -2,6 +2,35 @@
   padding-bottom: 4px;
 }
 
+.project-tree-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 12px 8px 24px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.project-tree-empty-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.project-tree-empty-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
 .tree-item {
   display: flex;
   align-items: center;

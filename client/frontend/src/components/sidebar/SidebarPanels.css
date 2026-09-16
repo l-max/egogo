@@ -34,6 +34,36 @@
   border-top: 1px solid var(--border);
 }
 
+.sidebar-section-header-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.sidebar-section-header-row .sidebar-section-header {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+.sidebar-section-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  padding: 0;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.sidebar-section-add-btn:hover {
+  background: var(--bg-active);
+  color: var(--text-primary);
+}
+
 .sidebar-section-header {
   display: flex;
   align-items: center;

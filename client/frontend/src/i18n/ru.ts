@@ -6,6 +6,7 @@ export interface Translations {
     projects: string;
     environments: string;
     newProject: string;
+    noProjects: string;
   };
   profile: {
     signIn: string;
@@ -136,6 +137,7 @@ export const ru: Translations = {
     projects: 'Проекты',
     environments: 'Окружения',
     newProject: 'Новый проект',
+    noProjects: 'Пока нет проектов',
   },
   profile: {
     signIn: 'Войти в профиль',
