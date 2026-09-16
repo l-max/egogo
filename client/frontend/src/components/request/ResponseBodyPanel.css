@@ -1,0 +1,122 @@
+.response-body-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.response-body-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  min-height: 32px;
+  flex-shrink: 0;
+}
+
+.response-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.response-search-icon {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.response-search-input {
+  flex: 1;
+  min-width: 80px;
+  padding: 4px 8px;
+  font-size: 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.response-search-input:focus {
+  border-color: var(--accent);
+}
+
+.response-search-counter {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  min-width: 48px;
+  text-align: center;
+}
+
+.response-body-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-radius: var(--radius);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.response-body-action:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.response-body-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.copy-action {
+  margin-left: auto;
+}
+
+.response-body-content {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  cursor: text;
+}
+
+.response-body-content ::selection,
+.response-body-content ::-moz-selection {
+  background: rgba(255, 108, 55, 0.35);
+  color: var(--text-primary);
+}
+
+.response-searchable-text {
+  margin: 0;
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-secondary);
+  text-align: left;
+  min-height: 100%;
+}
+
+.search-mark {
+  background: rgba(255, 200, 0, 0.35);
+  color: var(--text-primary);
+  border-radius: 2px;
+  padding: 0;
+}
+
+.search-mark-active {
+  background: rgba(255, 140, 0, 0.65);
+  outline: 1px solid var(--accent);
+}
+
+.response-body-panel-error .response-searchable-text,
+.response-body-panel-error .response-body-content {
+  color: var(--method-delete);
+}

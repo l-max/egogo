@@ -1,0 +1,139 @@
+.project-tree-content {
+  padding-bottom: 4px;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 5px 8px 5px 0;
+  cursor: pointer;
+  color: var(--text-secondary);
+  user-select: none;
+  position: relative;
+  min-height: 28px;
+}
+
+.tree-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.tree-item.dragging {
+  opacity: 0.45;
+}
+
+.tree-item.drop-target {
+  background: var(--accent-muted);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  color: var(--text-primary);
+}
+
+.tree-item.drop-target:hover {
+  background: var(--accent-muted);
+}
+
+.tree-item:hover .tree-item-actions,
+.tree-item-actions:focus-within {
+  opacity: 1;
+}
+
+.tree-item.project {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.tree-chevron {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tree-chevron-spacer {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.tree-icon-wrap {
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 6px;
+}
+
+.tree-icon {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.method-badge {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+  margin-right: 6px;
+}
+
+.tree-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tree-item-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.tree-item.request .tree-label {
+  gap: 0;
+}
+
+.tree-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 4px;
+}
+
+.tree-action-btn {
+  padding: 2px;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.tree-action-btn:hover {
+  background: var(--bg-active);
+  color: var(--text-primary);
+}
+
+.tree-rename-input {
+  flex: 1;
+  min-width: 0;
+  padding: 2px 4px;
+  font-size: 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--accent);
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
