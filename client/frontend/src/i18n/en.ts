@@ -9,6 +9,7 @@ export const en: Translations = {
     environments: 'Environments',
     newProject: 'New project',
     noProjects: 'No projects yet',
+    sync: 'Sync',
   },
   profile: {
     signIn: 'Sign in to profile',

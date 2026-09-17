@@ -64,6 +64,42 @@
   color: var(--text-primary);
 }
 
+.sidebar-section-sync-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  padding: 0;
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.sidebar-section-sync-btn:hover {
+  background: var(--bg-active);
+  color: var(--text-primary);
+}
+
+.sidebar-section-sync-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.sidebar-section-sync-btn.spinning svg {
+  animation: sidebar-sync-spin 0.8s linear infinite;
+}
+
+@keyframes sidebar-sync-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .sidebar-section-header {
   display: flex;
   align-items: center;

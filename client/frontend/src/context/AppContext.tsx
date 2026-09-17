@@ -61,6 +61,7 @@ interface AppContextValue extends AppState {
   treeAction: (ref: NodeRef, action: import('../types').ContextMenuAction) => void;
   renameNode: (ref: NodeRef, name: string) => void;
   moveTreeNode: (source: NodeRef, targetParent: NodeRef) => void;
+  syncProjects: () => Promise<void>;
   addCookieDomain: (domain: string) => void;
   removeCookieDomain: (domain: string) => void;
   upsertCookie: (cookie: StoredCookie) => void;
@@ -394,6 +395,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     [activeProfile.type, state.activeProfileId]
   );
+
+  const syncProjects = useCallback(async (): Promise<void> => {
+    if (activeProfile.type !== 'remote') return;
+    const profileId = state.activeProfileId;
+    const remote = await loadRemoteProjects(profileId);
+    if (remote.length === 0) return;
+    persistProjects(profileId, remote);
+    setState((s) => {
+      const session = reconcileSession(
+        {
+          tabs: s.tabs,
+          activeTabId: s.activeTabId,
+          activeEnvironmentId: s.activeEnvironmentId,
+        },
+        remote,
+        s.environments,
+        t.tabs.newRequest
+      );
+      return {
+        ...s,
+        projects: remote,
+        tabs: session.tabs,
+        activeTabId: session.activeTabId,
+        activeEnvironmentId: session.activeEnvironmentId,
+      };
+    });
+  }, [activeProfile.type, state.activeProfileId, t.tabs.newRequest]);
 
   useEffect(() => {
     (async () => {
@@ -974,6 +1002,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         treeAction,
         renameNode,
         moveTreeNode,
+        syncProjects,
         addCookieDomain,
         removeCookieDomain,
         upsertCookie,

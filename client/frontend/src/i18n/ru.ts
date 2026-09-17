@@ -7,6 +7,7 @@ export interface Translations {
     environments: string;
     newProject: string;
     noProjects: string;
+    sync: string;
   };
   profile: {
     signIn: string;
@@ -138,6 +139,7 @@ export const ru: Translations = {
     environments: 'Окружения',
     newProject: 'Новый проект',
     noProjects: 'Пока нет проектов',
+    sync: 'Синхронизировать',
   },
   profile: {
     signIn: 'Войти в профиль',

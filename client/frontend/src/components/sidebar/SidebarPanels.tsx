@@ -1,4 +1,5 @@
-import { ChevronRight, ChevronDown, Globe, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronRight, ChevronDown, Globe, Plus, RefreshCw } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { ProjectTree } from './ProjectTree';
 import './SidebarPanels.css';
@@ -18,7 +19,19 @@ export function SidebarPanels({
   onToggleProjects,
   onToggleEnvironments,
 }: SidebarPanelsProps) {
-  const { environments, openEnvironmentEditor, createProject, t } = useApp();
+  const { environments, openEnvironmentEditor, createProject, activeProfile, syncProjects, t } =
+    useApp();
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    if (syncing || activeProfile.type !== 'remote') return;
+    setSyncing(true);
+    try {
+      await syncProjects();
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   return (
     <div className="sidebar-panels">
@@ -30,6 +43,17 @@ export function SidebarPanels({
             </span>
             <span className="sidebar-section-title-text">{t.sidebar.projects}</span>
           </button>
+          {activeProfile.type === 'remote' && (
+            <button
+              className={`sidebar-section-sync-btn${syncing ? ' spinning' : ''}`}
+              title={t.sidebar.sync}
+              aria-label={t.sidebar.sync}
+              disabled={syncing}
+              onClick={() => void handleSync()}
+            >
+              <RefreshCw size={14} />
+            </button>
+          )}
           <button
             className="sidebar-section-add-btn"
             title={t.sidebar.newProject}
