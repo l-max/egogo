@@ -11,6 +11,10 @@
   min-height: 0;
 }
 
+.sidebar-section-top.sidebar-section-grow + .sidebar-panels-spacer {
+  flex: 0;
+}
+
 .sidebar-section-grow {
   flex: 1;
   min-height: 0;
