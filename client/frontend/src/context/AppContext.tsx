@@ -51,6 +51,7 @@ interface AppContextValue extends AppState {
   openEnvironmentEditor: (environmentId: string) => void;
   saveEnvironment: (environmentId: string, variables: Record<string, string>) => Promise<void>;
   openTab: (tab: Omit<RequestTab, 'id'> & { id?: string }) => void;
+  createRequest: () => void;
   closeTab: (id: string) => void;
   setActiveTab: (id: string) => void;
   setActiveEnvironment: (id: string | null) => void;
@@ -211,13 +212,13 @@ async function activateProfile(
   const cookieStore = await loadCookies(profileId);
 
   const session = savedSession
-    ? reconcileSession(savedSession, projects, environments, emptyTabName)
+    ? reconcileSession(savedSession, projects, environments)
     : {
         tabs: [createEmptyRequestTab(emptyTabName)],
         activeTabId: '',
         activeEnvironmentId: environments[0]?.id ?? null,
       };
-  if (!session.activeTabId) {
+  if (!session.activeTabId && session.tabs.length > 0) {
     session.activeTabId = session.tabs[session.tabs.length - 1].id;
   }
 
@@ -301,7 +302,7 @@ async function loadSession(profileId: string): Promise<ProfileSession | null> {
     const raw = await GetSession(profileId);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as ProfileSession;
-    if (!Array.isArray(parsed.tabs) || parsed.tabs.length === 0) return null;
+    if (!parsed || !Array.isArray(parsed.tabs)) return null;
     return parsed;
   } catch {
     return null;
@@ -410,8 +411,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           activeEnvironmentId: s.activeEnvironmentId,
         },
         remote,
-        s.environments,
-        t.tabs.newRequest
+        s.environments
       );
       return {
         ...s,
@@ -421,7 +421,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         activeEnvironmentId: session.activeEnvironmentId,
       };
     });
-  }, [activeProfile.type, state.activeProfileId, t.tabs.newRequest]);
+  }, [activeProfile.type, state.activeProfileId]);
 
   useEffect(() => {
     (async () => {
@@ -446,13 +446,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const emptyTabName = translate(settings.language).tabs.newRequest;
 
       const session = savedSession
-        ? reconcileSession(savedSession, projects, environments, emptyTabName)
+        ? reconcileSession(savedSession, projects, environments)
         : {
             tabs: [createEmptyRequestTab(emptyTabName)],
             activeTabId: '',
             activeEnvironmentId: environments[0]?.id ?? null,
           };
-      if (!session.activeTabId) {
+      if (!session.activeTabId && session.tabs.length > 0) {
         session.activeTabId = session.tabs[session.tabs.length - 1].id;
       }
 
@@ -731,20 +731,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const closeTab = useCallback(
-    (id: string) => {
-      setState((s) => {
-        const tabs = s.tabs.filter((t) => t.id !== id);
-        if (tabs.length === 0) {
-          const fallback = createEmptyRequestTab(t.tabs.newRequest);
-          return { ...s, tabs: [fallback], activeTabId: fallback.id };
-        }
-        const activeTabId = s.activeTabId === id ? tabs[tabs.length - 1].id : s.activeTabId;
-        return { ...s, tabs, activeTabId };
-      });
-    },
-    [t.tabs.newRequest]
-  );
+  const closeTab = useCallback((id: string) => {
+    setState((s) => {
+      const tabs = s.tabs.filter((t) => t.id !== id);
+      if (tabs.length === 0) {
+        return { ...s, tabs: [], activeTabId: '' };
+      }
+      const activeTabId = s.activeTabId === id ? tabs[tabs.length - 1].id : s.activeTabId;
+      return { ...s, tabs, activeTabId };
+    });
+  }, []);
+
+  const createRequest = useCallback(() => {
+    setState((s) => {
+      const tab = createEmptyRequestTab(t.tabs.newRequest);
+      return { ...s, tabs: [...s.tabs, tab], activeTabId: tab.id };
+    });
+  }, [t.tabs.newRequest]);
 
   const setActiveTab = useCallback((id: string) => {
     setState((s) => ({ ...s, activeTabId: id }));
@@ -992,6 +995,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         openEnvironmentEditor,
         saveEnvironment,
         openTab,
+        createRequest,
         closeTab,
         setActiveTab,
         setActiveEnvironment,

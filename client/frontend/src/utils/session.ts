@@ -3,7 +3,7 @@ import { findRequest } from './tree';
 
 export function createEmptyRequestTab(name: string): RequestTab {
   return {
-    id: `tab-${Date.now()}`,
+    id: `tab-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     name,
     method: 'GET',
     url: '',
@@ -15,12 +15,11 @@ export function createEmptyRequestTab(name: string): RequestTab {
 export function reconcileSession(
   session: ProfileSession,
   projects: Project[],
-  environments: Environment[],
-  emptyTabName: string
+  environments: Environment[]
 ): ProfileSession {
   const envIds = new Set(environments.map((e) => e.id));
 
-  let tabs = session.tabs.filter((tab) => {
+  const tabs = session.tabs.filter((tab) => {
     if (tab.kind === 'settings') return true;
     if (tab.kind === 'environment') {
       return Boolean(tab.environmentId && envIds.has(tab.environmentId));
@@ -32,12 +31,10 @@ export function reconcileSession(
     return false;
   });
 
-  if (tabs.length === 0) {
-    tabs = [createEmptyRequestTab(emptyTabName)];
-  }
-
   let activeTabId = session.activeTabId;
-  if (!tabs.some((tab) => tab.id === activeTabId)) {
+  if (tabs.length === 0) {
+    activeTabId = '';
+  } else if (!tabs.some((tab) => tab.id === activeTabId)) {
     activeTabId = tabs[tabs.length - 1].id;
   }
 

@@ -117,6 +117,29 @@
   background: var(--bg-active);
 }
 
+.tab-add {
+  flex-shrink: 0;
+  align-self: center;
+  margin: 0 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background 0.1s, color 0.1s;
+}
+
+.tab-add:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.tab-add:active {
+  background: var(--bg-active);
+}
+
 .content-area {
   flex: 1;
   overflow: hidden;

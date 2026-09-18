@@ -1,0 +1,77 @@
+.empty-workspace {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 32px;
+}
+
+.empty-workspace-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  text-align: center;
+  max-width: 480px;
+  animation: empty-workspace-fade 0.25s ease;
+}
+
+@keyframes empty-workspace-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.empty-workspace-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent-muted);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+}
+
+.empty-workspace-create {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.empty-workspace-create:hover {
+  background: var(--accent-hover);
+}
+
+.empty-workspace-create:active {
+  transform: scale(0.97);
+}
+
+.empty-workspace-quote {
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.empty-workspace-author {
+  color: var(--text-muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

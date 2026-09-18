@@ -1,9 +1,9 @@
-import { X, Globe } from 'lucide-react';
+import { X, Globe, Plus } from 'lucide-react';
 import { useApp, methodColor } from '../../context/AppContext';
 import { EnvironmentSelector } from '../common/EnvironmentSelector';
 
 export function TabBar() {
-  const { tabs, activeTabId, setActiveTab, closeTab } = useApp();
+  const { tabs, activeTabId, setActiveTab, closeTab, createRequest, t } = useApp();
 
   return (
     <div className="tab-bar">
@@ -41,6 +41,9 @@ export function TabBar() {
           </div>
         ))}
       </div>
+      <button className="tab-add" onClick={createRequest} title={t.tabs.newRequest}>
+        <Plus size={14} />
+      </button>
       <div className="tab-bar-env">
         <EnvironmentSelector />
       </div>

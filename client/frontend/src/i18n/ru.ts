@@ -34,6 +34,11 @@ export interface Translations {
     newRequest: string;
     settings: string;
   };
+  empty: {
+    createRequest: string;
+    quote: string;
+    quoteAuthor: string;
+  };
   request: {
     send: string;
     save: string;
@@ -165,6 +170,11 @@ export const ru: Translations = {
   tabs: {
     newRequest: 'Новый запрос',
     settings: 'Настройки',
+  },
+  empty: {
+    createRequest: 'Создать запрос',
+    quote: 'Путь в тысячу ли начинается с первого шага.',
+    quoteAuthor: 'Лао-цзы',
   },
   request: {
     send: 'Отправить',

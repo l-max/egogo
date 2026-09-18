@@ -36,6 +36,11 @@ export const en: Translations = {
     newRequest: 'New request',
     settings: 'Settings',
   },
+  empty: {
+    createRequest: 'Create request',
+    quote: 'A journey of a thousand miles begins with a single step.',
+    quoteAuthor: 'Laozi',
+  },
   request: {
     send: 'Send',
     save: 'Save',
