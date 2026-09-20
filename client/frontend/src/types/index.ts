@@ -1,5 +1,11 @@
 export type ProfileType = 'local' | 'remote' | 'git';
 
+export type ProfileConnectionStatus = 'online' | 'offline' | 'unknown';
+
+export type ConnectionAlert =
+  | { kind: 'unavailable'; profileName: string }
+  | { kind: 'disconnected'; profileId: string; profileName: string };
+
 export interface Profile {
   id: string;
   name: string;
@@ -86,6 +92,8 @@ export interface ProfileSession {
 export interface AppState {
   profiles: Profile[];
   activeProfileId: string;
+  profileStatus: Record<string, ProfileConnectionStatus>;
+  connectionAlert: ConnectionAlert | null;
   projects: Project[];
   environments: Environment[];
   activeEnvironmentId: string | null;

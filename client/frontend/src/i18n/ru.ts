@@ -26,6 +26,16 @@ export interface Translations {
     cancel: string;
     signingIn: string;
     signInError: string;
+    serverUnreachable: string;
+    serverUnavailableHint: string;
+    connectionLostTitle: string;
+    connectionLostMessage: string;
+    stay: string;
+    switchToAnotherAccount: string;
+    ok: string;
+    connected: string;
+    disconnected: string;
+    checking: string;
     settings: string;
     signOut: string;
     local: string;
@@ -163,6 +173,18 @@ export const ru: Translations = {
     cancel: 'Отмена',
     signingIn: 'Вход…',
     signInError: 'Не удалось войти',
+    serverUnreachable: 'Сервер временно недоступен',
+    serverUnavailableHint:
+      'Не удалось подключиться к серверу «{server}». Проверьте, что сервер запущен, и повторите попытку.',
+    connectionLostTitle: 'Соединение с сервером разорвано',
+    connectionLostMessage:
+      'Сервер «{server}» временно недоступен. Вы можете остаться в этом аккаунте или переключиться на другой аккаунт.',
+    stay: 'Остаться',
+    switchToAnotherAccount: 'Переключиться на другой аккаунт',
+    ok: 'OK',
+    connected: 'Подключено',
+    disconnected: 'Нет подключения',
+    checking: 'Проверка подключения…',
     settings: 'Настройки профиля',
     signOut: 'Выйти',
     local: 'Локальный',

@@ -4,6 +4,7 @@ import { EmptyWorkspace } from './EmptyWorkspace';
 import { RequestPanel } from '../request/RequestPanel';
 import { SettingsPanel } from '../settings/SettingsPanel';
 import { EnvironmentEditor } from '../environment/EnvironmentEditor';
+import { ConnectionAlertModal } from '../common/ConnectionAlertModal';
 import { useApp } from '../../context/AppContext';
 
 export function AppLayout() {
@@ -27,6 +28,7 @@ export function AppLayout() {
           )}
         </div>
       </div>
+      <ConnectionAlertModal />
     </div>
   );
 }

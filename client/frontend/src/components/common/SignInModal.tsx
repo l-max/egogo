@@ -12,7 +12,7 @@ interface SignInModalProps {
 }
 
 export function SignInModal({ onClose, initialTab = 'login', initialInviteUrl = '' }: SignInModalProps) {
-  const { t, signIn, redeemInvite, checkPendingInvite } = useApp();
+  const { t, signIn, redeemInvite, checkPendingInvite, checkServerHealth } = useApp();
   const [tab, setTab] = useState<SignInTab>(initialTab);
   const [serverUrl, setServerUrl] = useState('http://localhost:8090');
   const [email, setEmail] = useState('');
@@ -47,6 +47,14 @@ export function SignInModal({ onClose, initialTab = 'login', initialInviteUrl = 
     setError('');
     setLoading(true);
     try {
+      // Быстрая проверка доступности сервера, чтобы не ждать долгий таймаут.
+      const ok = await checkServerHealth(serverUrl);
+      if (!ok) {
+        setError(
+          `${t.profile.serverUnreachable}. ${t.profile.serverUnavailableHint.replace('{server}', serverUrl)}`
+        );
+        return;
+      }
       await signIn(serverUrl, email, password);
       onClose();
     } catch (err) {

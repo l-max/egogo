@@ -28,6 +28,18 @@ export const en: Translations = {
     cancel: 'Cancel',
     signingIn: 'Signing in…',
     signInError: 'Sign in failed',
+    serverUnreachable: 'Server temporarily unavailable',
+    serverUnavailableHint:
+      'Unable to connect to server “{server}”. Make sure the server is running and try again.',
+    connectionLostTitle: 'Connection to the server lost',
+    connectionLostMessage:
+      'Server “{server}” is temporarily unavailable. You can stay in this account or switch to another account.',
+    stay: 'Stay',
+    switchToAnotherAccount: 'Switch to another account',
+    ok: 'OK',
+    connected: 'Connected',
+    disconnected: 'No connection',
+    checking: 'Checking connection…',
     settings: 'Profile settings',
     signOut: 'Sign out',
     local: 'Local',

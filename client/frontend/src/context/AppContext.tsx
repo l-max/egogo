@@ -3,7 +3,9 @@ import { t as translate } from '../i18n';
 import type {
   AppState,
   AppSettings,
+  ConnectionAlert,
   Profile,
+  ProfileConnectionStatus,
   Project,
   Environment,
   RequestTab,
@@ -74,6 +76,9 @@ interface AppContextValue extends AppState {
   redeemInvite: (inviteUrl: string, password: string) => Promise<void>;
   signOut: (profileId: string) => Promise<void>;
   checkPendingInvite: () => Promise<{ serverUrl: string; email: string; inviteUrl: string } | null>;
+  checkServerHealth: (serverUrl: string) => Promise<boolean>;
+  closeConnectionAlert: () => void;
+  switchToLocalFromAlert: () => void;
 }
 
 const defaultProfile: Profile = {
@@ -349,6 +354,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>({
     profiles: [defaultProfile],
     activeProfileId: 'my',
+    profileStatus: {},
+    connectionAlert: null,
     projects: defaultProjects,
     environments: defaultEnvironments,
     activeEnvironmentId: 'dev',
@@ -382,6 +389,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     [state.activeProfileId]
   );
+
+  const checkServerHealth = useCallback(async (serverUrl: string): Promise<boolean> => {
+    try {
+      const { CheckServerHealth } = await import('../../wailsjs/go/main/App');
+      await CheckServerHealth(serverUrl);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
 
   const pushRemoteTree = useCallback(
     (projects: Project[], projectIds: (string | undefined)[]) => {
@@ -540,6 +557,68 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
   }, [state.cookieStore, state.activeProfileId]);
 
+  // Периодический опрос доступности ВСЕХ серверных аккаунтов (независимо от активного).
+  // Обновляет индикаторы связи (зелёная/красная точка) и, при обрыве соединения
+  // с активным remote-профилем (переход online -> offline), показывает модалку
+  // «соединение разорвано» с выбором: остаться или переключиться на другой аккаунт.
+  const prevStatusRef = useRef<ProfileConnectionStatus | null>(null);
+
+  useEffect(() => {
+    const remoteProfiles = state.profiles.filter((p) => p.type === 'remote' && p.serverUrl);
+    if (remoteProfiles.length === 0) return;
+
+    let cancelled = false;
+
+    const checkAll = async () => {
+      const results = await Promise.all(
+        remoteProfiles.map(async (p) => ({
+          id: p.id,
+          ok: p.serverUrl ? await checkServerHealth(p.serverUrl) : false,
+        }))
+      );
+      if (cancelled) return;
+
+      setState((s) => {
+        const nextStatus = { ...s.profileStatus };
+        let changed = false;
+        for (const r of results) {
+          const st: ProfileConnectionStatus = r.ok ? 'online' : 'offline';
+          if (nextStatus[r.id] !== st) {
+            nextStatus[r.id] = st;
+            changed = true;
+          }
+        }
+        if (!changed) return s;
+
+        const patch: Partial<AppState> = { profileStatus: nextStatus };
+
+        // Модалка обрыва — только для активного remote-профиля и только при переходе в офлайн.
+        const active = s.profiles.find((p) => p.id === s.activeProfileId);
+        if (active && active.type === 'remote') {
+          const prev = prevStatusRef.current ?? s.profileStatus[active.id] ?? 'unknown';
+          const next = nextStatus[active.id];
+          prevStatusRef.current = next;
+          if (next === 'offline' && prev !== 'offline') {
+            patch.connectionAlert = {
+              kind: 'disconnected',
+              profileId: active.id,
+              profileName: active.name,
+            };
+          }
+        }
+        return { ...s, ...patch };
+      });
+    };
+
+    void checkAll();
+    const timer = window.setInterval(() => void checkAll(), 15000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      prevStatusRef.current = null;
+    };
+  }, [state.profiles, state.activeProfileId, checkServerHealth]);
+
   const setLanguage = useCallback(
     (language: 'ru' | 'en') => {
       setState((s) => {
@@ -570,17 +649,58 @@ export function AppProvider({ children }: { children: ReactNode }) {
     [persistSettings]
   );
 
-  const switchProfile = useCallback((id: string) => {
-    setState((s) => {
-      if (s.activeProfileId === id) return s;
-      const profile = s.profiles.find((p) => p.id === id);
+  const switchProfile = useCallback(
+    (id: string) => {
+      if (state.activeProfileId === id) return;
+      const profile = state.profiles.find((p) => p.id === id);
+      if (!profile) return;
+
+      const doSwitch = () => {
+        setState((s) => {
+          if (s.activeProfileId === id) return s;
+          void (async () => {
+            const patch = await activateProfile(id, profile, s.settings.language);
+            setState((current) => ({ ...current, ...patch }));
+          })();
+          return { ...s, activeProfileId: id };
+        });
+      };
+
+      if (profile.type !== 'remote') {
+        doSwitch();
+        return;
+      }
+
+      // Для серверного аккаунта сначала проверяем доступность сервера.
+      const serverUrl = profile.serverUrl;
       void (async () => {
-        const patch = await activateProfile(id, profile, s.settings.language);
-        setState((current) => ({ ...current, ...patch }));
+        const ok = serverUrl ? await checkServerHealth(serverUrl) : false;
+        if (!ok) {
+          setState((s) => ({
+            ...s,
+            profileStatus: { ...s.profileStatus, [id]: 'offline' },
+            connectionAlert: { kind: 'unavailable', profileName: profile.name },
+          }));
+          return;
+        }
+        setState((s) => ({
+          ...s,
+          profileStatus: { ...s.profileStatus, [id]: 'online' },
+        }));
+        doSwitch();
       })();
-      return { ...s, activeProfileId: id };
-    });
+    },
+    [state.activeProfileId, state.profiles, checkServerHealth]
+  );
+
+  const closeConnectionAlert = useCallback(() => {
+    setState((s) => ({ ...s, connectionAlert: null }));
   }, []);
+
+  const switchToLocalFromAlert = useCallback(() => {
+    closeConnectionAlert();
+    switchProfile('my');
+  }, [closeConnectionAlert, switchProfile]);
 
   const addRemoteProfile = useCallback(async (result: {
     profileId: string;
@@ -593,6 +713,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setState((s) => ({
       ...s,
       ...patch,
+      profileStatus: { ...s.profileStatus, [profile.id]: 'online' },
       profiles: s.profiles.some((p) => p.id === profile.id)
         ? s.profiles.map((p) => (p.id === profile.id ? profile : p))
         : [...s.profiles, profile],
@@ -627,15 +748,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await AuthSignOut(profileId);
     setState((s) => {
       const profiles = s.profiles.filter((p) => p.id !== profileId);
+      const profileStatus = { ...s.profileStatus };
+      delete profileStatus[profileId];
       if (s.activeProfileId !== profileId) {
-        return { ...s, profiles };
+        return { ...s, profiles, profileStatus };
       }
       void (async () => {
         const myProfile = profiles.find((p) => p.id === 'my') ?? defaultProfile;
         const patch = await activateProfile('my', myProfile, s.settings.language);
         setState((current) => ({ ...current, ...patch, profiles }));
       })();
-      return { ...s, profiles, activeProfileId: 'my' };
+      return { ...s, profiles, profileStatus, activeProfileId: 'my' };
     });
   }, []);
 
@@ -1018,6 +1141,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         redeemInvite,
         signOut,
         checkPendingInvite,
+        checkServerHealth,
+        closeConnectionAlert,
+        switchToLocalFromAlert,
       }}
     >
       {children}

@@ -5,8 +5,17 @@ import { Avatar } from './Avatar';
 import { SignInModal } from './SignInModal';
 import './ProfileDropdown.css';
 
+function statusTitle(
+  status: import('../../types').ProfileConnectionStatus | undefined,
+  t: import('../../i18n').Translations
+): string {
+  if (status === 'online') return t.profile.connected;
+  if (status === 'offline') return t.profile.disconnected;
+  return t.profile.checking;
+}
+
 export function ProfileDropdown() {
-  const { activeProfile, profiles, switchProfile, signOut, t } = useApp();
+  const { activeProfile, profiles, profileStatus, switchProfile, signOut, t } = useApp();
   const [open, setOpen] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const [inviteUrl, setInviteUrl] = useState('');
@@ -42,7 +51,15 @@ export function ProfileDropdown() {
         <div className="profile-selector" onClick={() => setOpen(!open)}>
           <Avatar letter={activeProfile.avatarLetter} color={activeProfile.avatarColor} />
           <div className="profile-info">
-            <div className="profile-name">{activeProfile.name}</div>
+            <div className="profile-name">
+              {activeProfile.type === 'remote' && (
+                <span
+                  className={`conn-dot ${profileStatus[activeProfile.id] ?? 'unknown'}`}
+                  title={statusTitle(profileStatus[activeProfile.id], t)}
+                />
+              )}
+              {activeProfile.name}
+            </div>
             <div className="profile-server">
               {activeProfile.serverName ?? t.profile.local}
             </div>
@@ -55,7 +72,9 @@ export function ProfileDropdown() {
             {profiles.map((profile) => (
               <div
                 key={profile.id}
-                className={`profile-dropdown-item ${profile.id === activeProfile.id ? 'active' : ''}`}
+                className={`profile-dropdown-item ${profile.id === activeProfile.id ? 'active' : ''} ${
+                  profile.type === 'remote' && profileStatus[profile.id] === 'offline' ? 'offline' : ''
+                }`}
               >
                 <div
                   className="profile-dropdown-main"
@@ -65,6 +84,12 @@ export function ProfileDropdown() {
                   }}
                 >
                   <Avatar letter={profile.avatarLetter} color={profile.avatarColor} size={24} />
+                  {profile.type === 'remote' && (
+                    <span
+                      className={`conn-dot ${profileStatus[profile.id] ?? 'unknown'}`}
+                      title={statusTitle(profileStatus[profile.id], t)}
+                    />
+                  )}
                   <div className="profile-info">
                     <div className="profile-name">{profile.name}</div>
                     <div className="profile-server">

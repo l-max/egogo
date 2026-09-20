@@ -58,6 +58,22 @@ func (a *App) serverHTTPClient() *http.Client {
 	return &http.Client{Timeout: 30 * time.Second}
 }
 
+func (a *App) healthHTTPClient() *http.Client {
+	return &http.Client{Timeout: 4 * time.Second}
+}
+
+// CheckServerHealth performs a lightweight request to the server's health
+// endpoint to determine whether the server is reachable.
+func (a *App) CheckServerHealth(serverURL string) error {
+	serverURL = normalizeServerURL(serverURL)
+	client := a.healthHTTPClient()
+	_, err := serverGet[map[string]interface{}](client, serverURL+"/health", "")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func serverPost[T any](client *http.Client, endpoint string, body interface{}, authHeader string) (*T, int, error) {
 	var buf bytes.Buffer
 	if body != nil {
