@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/egogo/pkg/models"
+	"github.com/l-max/egogo/pkg/models"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )

@@ -3,7 +3,7 @@ package api
 import (
 	"context"
 
-	"github.com/egogo/server/internal/auth"
+	"github.com/l-max/egogo/server/internal/auth"
 )
 
 type ctxKey int

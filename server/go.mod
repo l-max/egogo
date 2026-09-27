@@ -1,13 +1,13 @@
-module github.com/egogo/server
+module github.com/l-max/egogo/server
 
 go 1.23.0
 
 require (
-	github.com/egogo/pkg v0.0.0
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/go-chi/cors v1.2.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
+	github.com/l-max/egogo/pkg v0.0.0
 	golang.org/x/crypto v0.33.0
 	modernc.org/sqlite v1.34.5
 )
@@ -23,4 +23,4 @@ require (
 	modernc.org/memory v1.8.0 // indirect
 )
 
-replace github.com/egogo/pkg => ../pkg
+replace github.com/l-max/egogo/pkg => ../pkg

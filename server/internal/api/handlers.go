@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/egogo/pkg/models"
-	"github.com/egogo/server/internal/auth"
-	"github.com/egogo/server/internal/crypto"
-	"github.com/egogo/server/internal/store"
+	"github.com/l-max/egogo/pkg/models"
+	"github.com/l-max/egogo/server/internal/auth"
+	"github.com/l-max/egogo/server/internal/crypto"
+	"github.com/l-max/egogo/server/internal/store"
 	"github.com/go-chi/chi/v5"
 )
 

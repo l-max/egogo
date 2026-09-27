@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/egogo/pkg/models"
+	"github.com/l-max/egogo/pkg/models"
 	"github.com/google/uuid"
 	_ "modernc.org/sqlite"
 )
