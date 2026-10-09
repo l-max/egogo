@@ -360,40 +360,32 @@ func (a *App) SyncRemoteProjects(profileID string) (string, error) {
 	client := a.serverHTTPClient()
 	authHeader := "Bearer " + cred.AccessToken
 
-	type projectMeta struct {
-		ID   string `json:"id"`
-		Name string `json:"name"`
+	type projectDetail struct {
+		ID        string          `json:"id"`
+		Name      string          `json:"name"`
+		UpdatedAt string          `json:"updatedAt"`
+		Data      json.RawMessage `json:"data"`
 	}
-	metas, err := serverGet[[]projectMeta](client, cred.ServerURL+"/api/v1/projects", authHeader)
+	details, err := serverGet[[]projectDetail](client, cred.ServerURL+"/api/v1/projects", authHeader)
 	if err != nil {
 		if refreshed, refreshErr := a.refreshTokens(cred); refreshErr == nil {
 			cred = refreshed
 			authHeader = "Bearer " + cred.AccessToken
-			metas, err = serverGet[[]projectMeta](client, cred.ServerURL+"/api/v1/projects", authHeader)
+			details, err = serverGet[[]projectDetail](client, cred.ServerURL+"/api/v1/projects", authHeader)
 		}
 		if err != nil {
 			return "", err
 		}
 	}
 
-	type projectDetail struct {
-		ID   string          `json:"id"`
-		Name string          `json:"name"`
-		Data json.RawMessage `json:"data"`
-	}
-
-	projects := make([]map[string]interface{}, 0, len(*metas))
-	for _, meta := range *metas {
-		detail, err := serverGet[projectDetail](client, cred.ServerURL+"/api/v1/projects/"+meta.ID, authHeader)
-		if err != nil {
-			continue
-		}
+	projects := make([]map[string]interface{}, 0, len(*details))
+	for _, detail := range *details {
 		var tree map[string]interface{}
 		if err := json.Unmarshal(detail.Data, &tree); err != nil {
 			tree = map[string]interface{}{"children": []interface{}{}}
 		}
-		tree["id"] = meta.ID
-		tree["name"] = meta.Name
+		tree["id"] = detail.ID
+		tree["name"] = detail.Name
 		tree["expanded"] = true
 		if _, ok := tree["children"]; !ok {
 			tree["children"] = []interface{}{}

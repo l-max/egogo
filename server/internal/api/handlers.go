@@ -365,9 +365,16 @@ func (s *Server) handleListProjects(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusInternalServerError, "internal error")
 		return
 	}
-	out := make([]projectMeta, 0, len(projects))
+	out := make([]projectDetail, 0, len(projects))
 	for _, p := range projects {
-		out = append(out, projectMeta{ID: p.ID, Name: p.Name, UpdatedAt: p.UpdatedAt})
+		plain, err := s.encryptor.Decrypt(p.Data)
+		if err != nil {
+			continue
+		}
+		out = append(out, projectDetail{
+			projectMeta: projectMeta{ID: p.ID, Name: p.Name, UpdatedAt: p.UpdatedAt},
+			Data:        plain,
+		})
 	}
 	writeJSON(w, http.StatusOK, out)
 }
