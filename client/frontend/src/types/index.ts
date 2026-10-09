@@ -4,7 +4,8 @@ export type ProfileConnectionStatus = 'online' | 'offline' | 'unknown';
 
 export type ConnectionAlert =
   | { kind: 'unavailable'; profileName: string }
-  | { kind: 'disconnected'; profileId: string; profileName: string };
+  | { kind: 'disconnected'; profileId: string; profileName: string }
+  | { kind: 'sessionExpired'; profileId: string; profileName: string };
 
 export interface Profile {
   id: string;

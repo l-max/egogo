@@ -79,6 +79,10 @@ interface AppContextValue extends AppState {
   checkServerHealth: (serverUrl: string) => Promise<boolean>;
   closeConnectionAlert: () => void;
   switchToLocalFromAlert: () => void;
+  signInModalOpen: boolean;
+  signInInviteUrl: string;
+  openSignIn: (inviteUrl?: string) => void;
+  closeSignIn: () => void;
 }
 
 const defaultProfile: Profile = {
@@ -364,6 +368,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     settings: { language: 'ru', myProfileName: 'My' },
     cookieStore: emptyCookieStore(),
   });
+
+  const [signInModal, setSignInModal] = useState<{ open: boolean; inviteUrl: string }>({
+    open: false,
+    inviteUrl: '',
+  });
+
+  const openSignIn = useCallback((inviteUrl = '') => {
+    setSignInModal({ open: true, inviteUrl });
+  }, []);
+
+  const closeSignIn = useCallback(() => {
+    setSignInModal((m) => ({ ...m, open: false }));
+  }, []);
   const sessionLoadedRef = useRef(false);
   const sessionRef = useRef<ProfileSession | null>(null);
   const cookiesLoadedRef = useRef(false);
@@ -506,6 +523,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
         persistEnvironments('my', defaultEnvironments);
       }
     })();
+  }, []);
+
+  // Бэкенд сообщил, что токены серверного аккаунта протухли (401 после
+  // неудачного refresh) — показываем модалку с предложением войти снова.
+  useEffect(() => {
+    let cleanup: (() => void) | undefined;
+    (async () => {
+      try {
+        const { EventsOn } = await import('../../wailsjs/runtime/runtime');
+        const off = EventsOn('auth:sessionExpired', (profileId: string) => {
+          setState((s) => {
+            const profile = s.profiles.find((p) => p.id === profileId);
+            if (!profile || profile.type !== 'remote') return s;
+            return {
+              ...s,
+              connectionAlert: {
+                kind: 'sessionExpired',
+                profileId,
+                profileName: profile.serverName ?? profile.name,
+              },
+            };
+          });
+        });
+        cleanup = typeof off === 'function' ? off : undefined;
+      } catch {
+        // outside wails
+      }
+    })();
+    return () => cleanup?.();
   }, []);
 
   useEffect(() => {
@@ -1144,6 +1190,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         checkServerHealth,
         closeConnectionAlert,
         switchToLocalFromAlert,
+        signInModalOpen: signInModal.open,
+        signInInviteUrl: signInModal.inviteUrl,
+        openSignIn,
+        closeSignIn,
       }}
     >
       {children}

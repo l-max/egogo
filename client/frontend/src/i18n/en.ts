@@ -34,6 +34,10 @@ export const en: Translations = {
     connectionLostTitle: 'Connection to the server lost',
     connectionLostMessage:
       'Server “{server}” is temporarily unavailable. You can stay in this account or switch to another account.',
+    sessionExpiredTitle: 'Session expired',
+    sessionExpiredMessage:
+      'Your session on “{server}” has expired. Sign in again to keep syncing your projects.',
+    signInAgain: 'Sign in again',
     stay: 'Stay',
     switchToAnotherAccount: 'Switch to another account',
     ok: 'OK',

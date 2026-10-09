@@ -39,6 +39,9 @@ EGOGO_SECRET=some_secret EGOGO_MASTER_KEY=1234567890ABCDEABCDE1234567890FF123456
 
 ```
 
+На сервере для администратора логин и пароль по умолчанию: 
+`admin@test.com` / `egogo-admin`
+
 ## Основные концепции
 
 | Концепция     | Описание                                            |

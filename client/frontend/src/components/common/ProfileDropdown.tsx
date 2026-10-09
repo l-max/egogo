@@ -15,10 +15,8 @@ function statusTitle(
 }
 
 export function ProfileDropdown() {
-  const { activeProfile, profiles, profileStatus, switchProfile, signOut, t } = useApp();
+  const { activeProfile, profiles, profileStatus, switchProfile, signOut, t, openSignIn } = useApp();
   const [open, setOpen] = useState(false);
-  const [signInOpen, setSignInOpen] = useState(false);
-  const [inviteUrl, setInviteUrl] = useState('');
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,8 +34,7 @@ export function ProfileDropdown() {
       try {
         const { EventsOn } = await import('../../../wailsjs/runtime/runtime');
         EventsOn('auth:invite', (url: string) => {
-          setInviteUrl(url);
-          setSignInOpen(true);
+          openSignIn(url);
         });
       } catch {
         // outside wails
@@ -121,8 +118,7 @@ export function ProfileDropdown() {
             <button
               className="profile-dropdown-signin"
               onClick={() => {
-                setInviteUrl('');
-                setSignInOpen(true);
+                openSignIn();
                 setOpen(false);
               }}
             >
@@ -132,14 +128,6 @@ export function ProfileDropdown() {
           </div>
         )}
       </div>
-
-      {signInOpen && (
-        <SignInModal
-          onClose={() => setSignInOpen(false)}
-          initialInviteUrl={inviteUrl}
-          initialTab={inviteUrl ? 'invite' : 'login'}
-        />
-      )}
     </>
   );
 }

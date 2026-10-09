@@ -3,12 +3,16 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 type serverTokens struct {
@@ -74,6 +78,25 @@ func (a *App) CheckServerHealth(serverURL string) error {
 	return nil
 }
 
+// apiError carries the HTTP status code of a failed server response so that
+// callers can distinguish auth failures (401) from other errors.
+type apiError struct {
+	Code int
+	Msg  string
+}
+
+func (e *apiError) Error() string {
+	if e.Msg != "" {
+		return e.Msg
+	}
+	return fmt.Sprintf("request failed (%d)", e.Code)
+}
+
+func isUnauthorized(err error) bool {
+	var ae *apiError
+	return errors.As(err, &ae) && ae.Code == http.StatusUnauthorized
+}
+
 func serverPost[T any](client *http.Client, endpoint string, body interface{}, authHeader string) (*T, int, error) {
 	var buf bytes.Buffer
 	if body != nil {
@@ -103,10 +126,7 @@ func serverPost[T any](client *http.Client, endpoint string, body interface{}, a
 			Error string `json:"error"`
 		}
 		_ = json.Unmarshal(data, &errBody)
-		if errBody.Error != "" {
-			return nil, resp.StatusCode, fmt.Errorf("%s", errBody.Error)
-		}
-		return nil, resp.StatusCode, fmt.Errorf("request failed (%d)", resp.StatusCode)
+		return nil, resp.StatusCode, &apiError{Code: resp.StatusCode, Msg: errBody.Error}
 	}
 	var out T
 	if len(data) > 0 {
@@ -139,10 +159,7 @@ func serverGet[T any](client *http.Client, endpoint string, authHeader string) (
 			Error string `json:"error"`
 		}
 		_ = json.Unmarshal(data, &errBody)
-		if errBody.Error != "" {
-			return nil, fmt.Errorf("%s", errBody.Error)
-		}
-		return nil, fmt.Errorf("request failed (%d)", resp.StatusCode)
+		return nil, &apiError{Code: resp.StatusCode, Msg: errBody.Error}
 	}
 	var out T
 	if err := json.Unmarshal(data, &out); err != nil {
@@ -180,10 +197,7 @@ func serverPut[T any](client *http.Client, endpoint string, body interface{}, au
 			Error string `json:"error"`
 		}
 		_ = json.Unmarshal(data, &errBody)
-		if errBody.Error != "" {
-			return nil, resp.StatusCode, fmt.Errorf("%s", errBody.Error)
-		}
-		return nil, resp.StatusCode, fmt.Errorf("request failed (%d)", resp.StatusCode)
+		return nil, resp.StatusCode, &apiError{Code: resp.StatusCode, Msg: errBody.Error}
 	}
 	var out T
 	if len(data) > 0 {
@@ -368,13 +382,14 @@ func (a *App) SyncRemoteProjects(profileID string) (string, error) {
 	}
 	details, err := serverGet[[]projectDetail](client, cred.ServerURL+"/api/v1/projects", authHeader)
 	if err != nil {
+		log.Printf("sync projects: %v", err)
 		if refreshed, refreshErr := a.refreshTokens(cred); refreshErr == nil {
 			cred = refreshed
 			authHeader = "Bearer " + cred.AccessToken
 			details, err = serverGet[[]projectDetail](client, cred.ServerURL+"/api/v1/projects", authHeader)
 		}
 		if err != nil {
-			return "", err
+			return "", a.failWithAuthCheck(profileID, err)
 		}
 	}
 
@@ -438,7 +453,7 @@ func (a *App) CreateRemoteProject(profileID, name, data string) (string, error) 
 			meta, _, err = doCreate(authHeader)
 		}
 		if err != nil {
-			return "", err
+			return "", a.failWithAuthCheck(profileID, err)
 		}
 	}
 
@@ -487,7 +502,7 @@ func (a *App) UpdateRemoteProject(profileID, projectID, name, data string) (stri
 			meta, _, err = doUpdate(authHeader)
 		}
 		if err != nil {
-			return "", err
+			return "", a.failWithAuthCheck(profileID, err)
 		}
 	}
 
@@ -496,6 +511,25 @@ func (a *App) UpdateRemoteProject(profileID, projectID, name, data string) (stri
 		return "", err
 	}
 	return string(out), nil
+}
+
+// notifySessionExpired informs the frontend that the stored tokens for the
+// given profile are no longer valid: the server returned 401 and the refresh
+// token was rejected as well, so the only way forward is to sign in again.
+func (a *App) notifySessionExpired(profileID string) {
+	if a.ctx == nil {
+		return
+	}
+	runtime.EventsEmit(a.ctx, "auth:sessionExpired", profileID)
+}
+
+// failWithAuthCheck passes err through, but emits the sessionExpired event
+// when the final error is an auth failure (401) after a failed token refresh.
+func (a *App) failWithAuthCheck(profileID string, err error) error {
+	if err != nil && isUnauthorized(err) {
+		a.notifySessionExpired(profileID)
+	}
+	return err
 }
 
 func (a *App) refreshTokens(cred *remoteProfileCredentials) (*remoteProfileCredentials, error) {

@@ -3,7 +3,14 @@ import { useApp } from '../../context/AppContext';
 import './ConnectionAlertModal.css';
 
 export function ConnectionAlertModal() {
-  const { t, connectionAlert, closeConnectionAlert, switchToLocalFromAlert } = useApp();
+  const {
+    t,
+    connectionAlert,
+    closeConnectionAlert,
+    switchToLocalFromAlert,
+    switchProfile,
+    openSignIn,
+  } = useApp();
 
   if (!connectionAlert) return null;
 
@@ -21,6 +28,38 @@ export function ConnectionAlertModal() {
           <div className="conn-alert-footer">
             <button type="button" className="conn-alert-btn primary" onClick={closeConnectionAlert}>
               {t.profile.ok}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (connectionAlert.kind === 'sessionExpired') {
+    return (
+      <div className="conn-alert-overlay">
+        <div className="conn-alert-modal">
+          <div className="conn-alert-icon error">
+            <AlertTriangle size={20} />
+          </div>
+          <h2>{t.profile.sessionExpiredTitle}</h2>
+          <p>
+            {t.profile.sessionExpiredMessage.replace('{server}', connectionAlert.profileName)}
+          </p>
+          <div className="conn-alert-footer">
+            <button type="button" className="conn-alert-btn secondary" onClick={closeConnectionAlert}>
+              {t.profile.stay}
+            </button>
+            <button
+              type="button"
+              className="conn-alert-btn primary"
+              onClick={() => {
+                closeConnectionAlert();
+                switchProfile('my');
+                openSignIn();
+              }}
+            >
+              {t.profile.signInAgain}
             </button>
           </div>
         </div>

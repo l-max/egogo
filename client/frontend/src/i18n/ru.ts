@@ -30,6 +30,9 @@ export interface Translations {
     serverUnavailableHint: string;
     connectionLostTitle: string;
     connectionLostMessage: string;
+    sessionExpiredTitle: string;
+    sessionExpiredMessage: string;
+    signInAgain: string;
     stay: string;
     switchToAnotherAccount: string;
     ok: string;
@@ -179,6 +182,10 @@ export const ru: Translations = {
     connectionLostTitle: 'Соединение с сервером разорвано',
     connectionLostMessage:
       'Сервер «{server}» временно недоступен. Вы можете остаться в этом аккаунте или переключиться на другой аккаунт.',
+    sessionExpiredTitle: 'Сессия истекла',
+    sessionExpiredMessage:
+      'Сессия на сервере «{server}» истекла. Войдите снова, чтобы синхронизировать проекты.',
+    signInAgain: 'Войти снова',
     stay: 'Остаться',
     switchToAnotherAccount: 'Переключиться на другой аккаунт',
     ok: 'OK',
