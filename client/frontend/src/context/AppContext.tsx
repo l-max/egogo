@@ -702,14 +702,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       if (!profile) return;
 
       const doSwitch = () => {
-        setState((s) => {
-          if (s.activeProfileId === id) return s;
-          void (async () => {
-            const patch = await activateProfile(id, profile, s.settings.language);
-            setState((current) => ({ ...current, ...patch }));
-          })();
-          return { ...s, activeProfileId: id };
-        });
+        // Сайд-эффекты (загрузка проектов) — вне updater'а setState:
+        // React StrictMode в dev-режиме вызывает updater дважды,
+        // и запрос к серверу ушёл бы два раза.
+        setState((s) => (s.activeProfileId === id ? s : { ...s, activeProfileId: id }));
+        void (async () => {
+          const patch = await activateProfile(id, profile, state.settings.language);
+          setState((current) => ({ ...current, ...patch }));
+        })();
       };
 
       if (profile.type !== 'remote') {
@@ -736,7 +736,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         doSwitch();
       })();
     },
-    [state.activeProfileId, state.profiles, checkServerHealth]
+    [state.activeProfileId, state.profiles, state.settings.language, checkServerHealth]
   );
 
   const closeConnectionAlert = useCallback(() => {
